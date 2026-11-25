@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پولدار V8 محله 3D + ربات</title>
+<style>
+*{box-sizing:border-box;font-family:Tahoma,sans-serif}body{margin:0;background:#5da24a;color:#fff}
+.top{background:#8d8578;display:flex;justify-content:space-between;align-items:center;padding:8px;position:sticky;top:0;z-index:5}
+.money{background:#6d675e;border-radius:8px;padding:6px 12px;font-size:14px}
+.avatar{display:flex;align-items:center;gap:6px;background:#6d675e;border-radius:10px;padding:4px 8px}
+.city{background:linear-gradient(#6db257,#4c8a3d);padding:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:980px;margin:auto}
+.b{border-radius:10px;padding:14px 4px;text-align:center;font-weight:900;font-size:13px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.3);color:#fff;text-shadow:0 1px 2px #000}
+.b:active{transform:scale(.92)} .b small{display:block;font-size:22px}
+.b1{background:#e67e22}.b2{background:#f1c40f;color:#333}.b3{background:#e74c3c}.b4{background:#9b59b6}.b6{background:#3498db}.b7{background:#1abc9c}.b8{background:#e91e63}
+.lane{background:#2c2c2c;text-align:left;overflow:hidden;white-space:nowrap;padding:4px;max-width:980px;margin:auto}
+.carM{display:inline-block;font-size:22px;margin-left:14px;animation:drive 9s linear infinite}
+@keyframes drive{from{transform:translateX(-60px)}to{transform:translateX(900px)}}
+.hood{max-width:980px;margin:auto;padding:8px;background:#3d6b35}
+.house3d{background:linear-gradient(145deg,#fff3d6,#d9a066);border-radius:12px;padding:10px;text-align:center;color:#333;transform:perspective(500px) rotateX(6deg) rotateY(-6deg);box-shadow:9px 9px 0 rgba(0,0,0,.35);border:2px solid #fff;cursor:pointer}
+.house3d:active{transform:scale(.95)}
+.house3d .im{font-size:52px;filter:drop-shadow(0 6px 4px rgba(0,0,0,.4))}
+.wrap{max-width:980px;margin:auto;padding:8px;background:#0e1826}
+.card{background:#1a2c42;border:1px solid #325473;border-radius:12px;padding:10px;margin-top:8px}
+button{background:#ff9800;border:0;border-radius:9px;padding:8px 12px;font-weight:bold;cursor:pointer;margin:2px}
+button:active{transform:scale(.9)}button.sec{background:#243c58;color:#fff;border:1px solid #45688c}
+.small{font-size:12px;color:#9fb6cc;line-height:1.9}
+#chatlog{height:150px;overflow:auto;background:#091420;border-radius:8px;padding:8px;font-size:13px;line-height:2}
+input,select{width:100%;padding:8px;border-radius:8px;border:1px solid #45688c;background:#091420;color:#fff;margin-top:5px}
+.item{display:flex;justify-content:space-between;align-items:center;background:#0f1f33;border:1px solid #2e4f70;border-radius:9px;padding:6px;margin:5px 0;font-size:13px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:10px;z-index:50}.modal.open{display:flex}.box{background:#16283e;border:1px solid #45688c;border-radius:14px;max-width:660px;width:100%;max-height:92vh;overflow:auto;padding:12px}
+.rock{font-size:30px;text-align:center;background:#0c1a2b;border-radius:8px;padding:8px}
+#buildbar{height:26px;background:#0c1a2b;border-radius:99px;position:relative;overflow:hidden;border:1px solid #45688c;margin:8px 0}
+#marker{position:absolute;top:0;bottom:0;width:24px;background:#ff5252}
+#greenzone{position:absolute;top:0;bottom:0;background:rgba(76,175,80,.7)}
+.phone{background:#000;border:3px solid #444;border-radius:22px;padding:10px;max-width:340px;margin:auto}
+.phScr{background:#12233a;border-radius:12px;padding:10px;min-height:320px}
+.appGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.appBtn{background:#1f3a5a;border:1px solid #4a739e;border-radius:12px;padding:16px 5px;color:#fff}
+.pad{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.trophy{font-size:90px;text-align:center;animation:pop .6s infinite alternate;cursor:pointer}
+@keyframes pop{from{transform:scale(1)}to{transform:scale(1.15)}}
+</style>
+</head>
+<body>
+<div class="top"><div class="money">💰 <span id="mTop">0</span> | 📍 <span id="locTop"></span></div><div class="avatar"><div><div id="pname" style="font-weight:900"></div><div id="kitb" style="font-size:11px"></div></div><div style="font-size:32px" id="avSkin">🧔</div></div></div>
+<div class="lane" id="lane"></div>
+<div class="city">
+<div class="b b1" onclick="openTravel()">🛫<small>ترمینال</small>/gy سفر</div>
+<div class="b b2" onclick="openBank()">🏦<small>بانک</small>سود</div>
+<div class="b b3" onclick="openJobs()">💼<small>اشتغال</small>کار</div>
+<div class="b b4" onclick="openShop()">🛍️<small>فروشگاه</small>ماشین</div>
+<div class="b b6" onclick="openBourse()">📈<small>بورس</small>ارز</div>
+<div class="b b1" onclick="openSib()">🛂<small>اداره</small>/sib ویزا</div>
+<div class="b b7" onclick="doEdu()">🎓<small>تحصیلات</small>حقوق</div>
+<div class="b b8" onclick="openPhone()">📱<small>گوشی</small>تلفن</div>
+<div class="b b2" onclick="openShopp()">💎<small>/shopp</small>کیت</div>
+</div>
+<div class="hood"><b>🏘️ محله 3D - خونه‌های <span id="hoodLoc"></span> (بزن روش بخر)</b><div id="hoodGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px"></div>
+<div style="margin-top:8px"><button onclick="openMission()" style="width:100%;background:#00e676">🎯 ماموریت‌های سخت - جایزه جام</button></div>
+</div>
+<div class="wrap">
+<div class="card"><b>💬 چت</b> <span class="small">/sib /gy america /shop /shopp /phone /Bal کد ۶ و ۸ رقمی</span><div id="chatlog"></div><div style="display:flex;gap:5px"><input id="ci" placeholder="بنویس..."><button onclick="sendChat()">ارسال</button></div></div>
+<div class="card"><b>📦 دارایی</b><div class="small" id="inv"></div><button class="sec" onclick="if(confirm('ریست؟')){localStorage.removeItem('pv8');location.reload()}">ریست</button></div>
+</div>
+<div class="modal" id="mm"><div class="box"><div id="mbody"></div><button class="sec" onclick="closeM()">بستن ✖</button></div></div>
+<script>
+function en(s){return String(s).replace(/[۰-۹]/g,function(d){return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))})}
+let RU=281400,RC=202000,RD=75000;
+const BOT_TOKEN="";
+const ADMIN_CHAT_ID="";
+function sendToAdmin(t){},body:JSON.stringify({chat_id:ADMIN_CHAT_ID,text:t})})}catch(e){}}
+let S=JSON.parse(localStorage.getItem('pv8')||'null')||{wallet:405000000,bank:0,dollar:0,cad:0,dinar:0,shopCoin:0,day:1,age:22,playerName:'',cars:[],homes:[],kit:null,skin:'🧔',used:[],loc:'iran',passport:false,passStep:0,visa:{america:0,canada:0,saudi:0},lastLogin:'',lastInt:1,eight:0,edu:0,missions:{}};
+function save(){localStorage.setItem('pv8',JSON.stringify(S))}
+function fmt(n){return Math.floor(n).toLocaleString('fa-IR')+' تومان'}
+function fmtD(n){return Number(Math.floor(n*100)/100).toLocaleString('en-US')+' $'}
+function log(t){let d=document.getElementById('chatlog');d.innerHTML+='<div>'+t+'</div>';d.scrollTop=9999}
+function openM(h){document.getElementById('mbody').innerHTML=h;document.getElementById('mm').classList.add('open')}
+function closeM(){document.getElementById('mm').classList.remove('open')}
+let CARS=[['پراید 131',750000000,2000000],['تیبا 1',650000000,1800000],['تیبا 2',700000000,1900000],['ساینا S',760000000,2100000],['کوییک R',820000000,2300000],['شاهین G',1050000000,3200000],['دنا پلاس توربو',1380000000,4200000],['تارا اتومات',1390000000,4300000],['پژو 206 تیپ 2',1930000000,8000000],['پژو 207 اتومات',1320000000,4000000],['سورن پلاس',980000000,2800000],['پژو پارس',1080000000,3200000],['نیسان آبی دوگانه',730000000,12000000],['هایما S7',2600000000,8000000],['BMW i8',35500000000,0]];
+let HOMES=[['سوئیت اسلامشهر','iran',2800000000,'🏠'],['تهرانپارس','iran',7500000000,'🏠'],['سعادت‌آباد','iran',15000000000,'🏢'],['ویلا لواسان','iran',32000000000,'🏰'],['ویلا متل‌قو','iran',18000000000,'🏡'],['مشهد','iran',9000000000,'🏠'],['اصفهان','iran',8000000000,'🏠'],['کیش','iran',13000000000,'🏝️'],['قشم','iran',11000000000,'🏖️'],['زعفرانیه','iran',45000000000,'🏙️'],['نیویورک','america',250000,'🏙️'],['لس‌آنجلس','america',2000000,'🏰'],['میامی','america',400000,'🏖️'],['شیکاگو','america',300000,'🏢'],['تورنتو','canada',350000,'🏠'],['ونکوور','canada',400000,'🏡'],['مونترال','canada',250000,'🏠'],['ریاض','saudi',150000,'🕌'],['جده','saudi',130000,'🏠'],['مکه','saudi',200000,'🕋']];
+let KITS={VIP:{d:10000000,b:0.5,coin:30,skin:'😎'},SUPER:{d:25000000,b:0.8,coin:100,skin:'🦸'},GOD:{d:100000000,b:1.2,coin:500,skin:'👑'}};
+if(!S.playerName){openM('<b>اسمتو بنویس 👤</b><input id=nminput placeholder=مثلا اسفندیار><button onclick="setN()">ثبت</button>')}
+function setN(){let v=document.getElementById('nminput').value.trim();if(v.length<2){alert('کوتاهه');return}S.playerName=v;save();closeM();update();renderHood();log('👋 '+v+' خوش اومدی!')}
+(function(){let t=new Date().toDateString();if(S.lastLogin!==t){let base=S.kit&&KITS[S.kit]?KITS[S.kit].d:4000000;if(S.lastLogin)S.wallet+=base;S.lastLogin=t;save();setTimeout(function(){log('🎁 دیلی +'+fmt(base))},600)}})();
+let lane=document.getElementById('lane');let em=['🚗','🚕','🚚'];for(let i=0;i<12;i++){let s=document.createElement('span');s.className='carM';s.innerText=em[i%em.length];s.style.animationDuration=(6+Math.random()*8)+'s';lane.appendChild(s)}
+function totalT(){let c=0;S.cars.forEach(function(i){c+=CARS[i][1]});S.homes.forEach(function(i){let h=HOMES[i];if(h[1]==='iran')c+=h[2];else if(h[1]==='america')c+=h[2]*RU;else if(h[1]==='canada')c+=h[2]*RC;else c+=h[2]*RD});return S.wallet+S.bank+c+S.dollar*RU+S.cad*RC+S.dinar*RD+S.shopCoin*2000000}
+function getB(){return S.kit&&KITS[S.kit]?KITS[S.kit].b:0.3}
+function locName(l){return l==='iran'?'🇮🇷 ایران':l==='america'?'🇺🇸 آمریکا':l==='canada'?'🇨🇦 کانادا':'🇸🇦 عربستان'}
+function update(){document.getElementById('pname').innerText=S.playerName||'';document.getElementById('avSkin').innerText=S.skin||'🧔';document.getElementById('kitb').innerText=S.kit?('💎 '+S.kit):'';document.getElementById('mTop').innerText=Math.floor(S.wallet/1000000)+' میلیون';document.getElementById('locTop').innerText=locName(S.loc);document.getElementById('hoodLoc').innerText=locName(S.loc);document.getElementById('inv').innerHTML='🎂 '+S.age+' | روز '+S.day+' | 💵 '+fmt(S.wallet)+' | 🏦 '+fmt(S.bank)+'<br>💲 '+fmtD(S.dollar)+' | 🇨🇦 '+S.cad.toFixed(1)+' | 🇸🇦 '+S.dinar.toFixed(1)+' | 💎 '+(S.shopCoin||0)+'<br>ثروت '+fmt(totalT())+' | ماشین '+S.cars.length+' خونه '+S.homes.length}
+function renderHood(){let g=document.getElementById('hoodGrid');g.innerHTML='';HOMES.forEach(function(h,idx){if(h[1]!==S.loc)return;let pr=h[1]==='iran'?fmt(h[2]):h[1]==='america'?fmtD(h[2]):h[2]+(h[1]==='canada'?' C$':' دینار');let d=document.createElement('div');d.className='house3d';d.innerHTML='<div class=im>'+h[3]+'</div><b>'+h[0]+'</b><div>'+pr+'</div><div style="font-size:11px">بزن بخر 👆</div>';d.onclick=function(){buyH(idx)};g.appendChild(d)})}
+function openBank(){openM('<h3>🏦 بانک '+(getB()*100)+'%</h3><div class=small>'+fmt(S.bank)+'</div><input id=bkAmt type=number value=4000000><button onclick="bankIn()">واریز</button><button class=sec onclick="bankOut()">برداشت</button>')}
+function bankIn(){let n=parseFloat(en(document.getElementById('bkAmt').value))||0;if(n<=0||S.wallet<n){log('❌ پول کمه');return}S.wallet-=n;S.bank+=n;save();update();openBank()}
+function bankOut(){S.wallet+=S.bank;S.bank=0;save();update();openBank()}
+function openJobs(){openM('<h3>💼 اشتغال</h3><button onclick="startMine()">⛏️ معدن سخت</button><button class=sec onclick="startBuild()">🏗️ ساختمان سخت</button><button class=sec onclick="startDalal()">🤝 دلالی فقط ایران</button>')}
+function openShop(){let h='<h3>🛍️ ماشین‌ها</h3>';CARS.forEach(function(c,i){let pr=S.loc==='iran'?fmt(c[1]):S.loc==='america'?fmtD(c[1]/RU):S.loc==='canada'?(c[1]/RC).toFixed(0)+' C$':Math.floor(c[1]/RD)+' دینار';h+='<div class=item><div><b>🚗 '+c[0]+' '+pr+'</b></div><button onclick="buyC('+i+')">خرید</button></div>'});openM(h)}
+function buyC(i){let p=CARS[i][1];if(S.loc==='iran'){if(S.wallet<p){log('❌ کمه');return}S.wallet-=p}else if(S.loc==='america'){if(S.dollar<p/RU){log('❌ فقط دلار');return}S.dollar-=p/RU}else if(S.loc==='canada'){if(S.cad<p/RC){log('❌ فقط دلار کانادا');return}S.cad-=p/RC}else{if(S.dinar<p/RD){log('❌ فقط دینار');return}S.dinar-=p/RD}S.cars.push(i);save();update();renderHood();checkAuto();log('🎉 '+CARS[i][0])}
+function buyH(idx){let h=HOMES[idx];if(h[1]!==S.loc){log('❌ باید بری '+locName(h[1]));return}if(h[1]==='iran'){if(S.wallet<h[2]){log('❌ پول کمه '+fmt(h[2]));return}S.wallet-=h[2]}else if(h[1]==='america'){if(S.dollar<h[2]){log('❌ دلار کمه');return}S.dollar-=h[2]}else if(h[1]==='canada'){if(S.cad<h[2]){log('❌ کمه');return}S.cad-=h[2]}else{if(S.dinar<h[2]){log('❌ دینار کمه');return}S.dinar-=h[2]}S.homes.push(idx);save();update();renderHood();checkAuto();log('🏠 خریدی '+h[0])}
+function openBourse(){openM('<h3>📈 بورس</h3><div class=small>دلار '+RU+' کانادا '+RC+' دینار '+RD+'</div><input id=exAmt type=number value=1000000><select id=exCur><option value=dollar>دلار آمریکا</option><option value=cad>دلار کانادا</option><option value=dinar>دینار</option></select><button onclick="exBuy()">تبدیل</button>')}
+function exBuy(){let t=parseFloat(en(document.getElementById('exAmt').value))||0;let c=document.getElementById('exCur').value;if(t<=0||S.wallet<t){log('❌ کمه');return}S.wallet-=t;if(c==='dollar')S.dollar+=t/RU;if(c==='cad')S.cad+=t/RC;if(c==='dinar')S.dinar+=t/RD;save();update();openBourse()}
+function doEdu(){if(S.wallet<200000000){log('❌ ۲۰۰م لازم');return}S.wallet-=200000000;S.edu++;save();update();log('🎓 تحصیلات '+S.edu)}
+function openShopp(){let h='<h3>💎 کیت و سکه</h3><div class=small>'+(S.kit||'نداری')+'</div><input id=kitCode placeholder="کد ۸ رقمی" style="direction:ltr;text-align:center"><button onclick="redeemKit()">فعال‌سازی</button><input id=easyCode placeholder="کد ۶ رقمی" style="direction:ltr;text-align:center"><button class=sec onclick="redeemEasy()">دریافت</button><div><button class=sec onclick="sellCoin(10)">فروش ۱۰</button><button class=sec onclick="sellCoin(100)">فروش ۱۰۰</button></div>';openM(h)}
+function check6(code){code=en(code).replace(/[^0-9]/g,'');code=code.padStart(6,'0').slice(-6);let s=code.slice(0,5),c=code.slice(5),w=[7,3,9,4,6],sum=8;for(let i=0;i<5;i++)sum+=parseInt(s[i])*w[i];if(String(sum%10)!==c)return 0;let amt=parseInt(s,10);if(amt<=0||amt>99999)return 0;return{code:code,amt:amt}}
+function check8(code){code=en(code).replace(/[^0-9]/g,'');if(code.length!==8)return 0;let t=parseInt(code[0]);if(t<1||t>3)return 0;let mid=code.slice(0,7),c=code.slice(7),w=[9,7,5,3,8,4,6],sum=17;for(let i=0;i<7;i++)sum+=parseInt(mid[i])*w[i];if(String(sum%10)!==c)return 0;return{code:code,type:t}}
+function redeemEasy(){let r=check6(document.getElementById('easyCode').value);if(!r){log('❌ نامعتبر');return}if(S.used.includes(r.code)){log('❌ تکراری');return}S.shopCoin+=r.amt;S.used.push(r.code);save();update();log('🎉 '+r.amt+' سکه');openShopp()}
+function redeemKit(){let r=check8(document.getElementById('kitCode').value);if(!r){log('❌ نامعتبر');return}if(S.used.includes(r.code)){log('❌ تکراری');return}let nk=r.type===1?'VIP':r.type===2?'SUPER':'GOD';S.kit=nk;S.skin=KITS[nk].skin;S.shopCoin+=KITS[nk].coin;S.used.push(r.code);save();update();log('💎 '+nk);openShopp()}
+function sellCoin(n){if((S.shopCoin||0)<n){log('❌ کمه');return}S.shopCoin-=n;S.wallet+=n*2000000;save();update();openShopp()}
+function openSib(){let h='<h3>🛂 /sib</h3><div class=item><div><b>پاسپورت '+(S.passport?'✅':'مرحله '+S.passStep+'/۳')+'</b></div>'+(S.passport?'':'<button onclick="doPass()">ماموریت</button>')+'</div>';[['america','🇺🇸 آمریکا'],['canada','🇨🇦 کانادا'],['saudi','🇸🇦 عربستان']].forEach(function(a){let cur=S.visa[a[0]]||0,mx=a[0]==='saudi'?2:3;h+='<div class=item><div><b>'+a[1]+' '+(cur>=mx?'✅':'مرحله '+cur+'/'+mx)+'</b></div>'+(cur>=mx?'':'<button onclick="doVisa(\''+a[0]+'\')">ماموریت</button>')+'</div>'});openM(h)}
+function doPass(){if(S.passport)return;if(S.passStep===0){if(S.wallet<50000000){log('❌ ۵۰م');return}S.wallet-=50000000;S.passStep=1;save();openM('<b>پایتخت؟</b><br><button onclick="quizPass(1)">تهران</button><button class=sec onclick="quizPass(0)">شیراز</button>');return}if(S.passStep===1){openM('<b>پایتخت؟</b><br><button onclick="quizPass(1)">تهران</button><button class=sec onclick="quizPass(0)">شیراز</button>');return}if(S.passStep===2){if(S.wallet<200000000){log('❌ ۲۰۰م');return}S.wallet-=200000000;S.passport=true;S.passStep=3;save();update();checkAuto();log('🎉 پاسپورت!');openSib()}}
+function quizPass(o){if(o){S.passStep=2;save();openSib()}else log('❌ غلط')}
+function doVisa(c){if(!S.passport){log('❌ اول پاسپورت');return}let cur=S.visa[c]||0;if(c==='america'){if(cur===0){if(S.wallet<100000000){log('❌ ۱۰۰م');return}S.wallet-=100000000;S.visa.america=1}else if(cur===1){if(totalT()<20000000000){log('❌ تمکن ۲۰ میلیارد');return}S.visa.america=2}else if(cur===2){if(S.wallet<500000000){log('❌ ۵۰۰م');return}S.wallet-=500000000;S.visa.america=3}}if(c==='canada'){if(cur===0){if(S.wallet<80000000){log('❌ ۸۰م');return}S.wallet-=80000000;S.visa.canada=1}else if(cur===1){if(totalT()<20000000000){log('❌ تمکن');return}S.visa.canada=2}else if(cur===2){if(S.wallet<300000000){log('❌ ۳۰۰م');return}S.wallet-=300000000;S.visa.canada=3}}if(c==='saudi'){if(cur===0){if(S.wallet<100000000){log('❌ ۱۰۰م');return}S.wallet-=100000000;S.visa.saudi=1}else if(cur===1){if(S.wallet<200000000){log('❌ ۲۰۰م');return}S.wallet-=200000000;S.visa.saudi=2}}save();update();checkAuto();openSib()}
+function openTravel(){let h='<h3>✈️ ترمینال '+locName(S.loc)+'</h3><div class=small>ثروت '+fmt(totalT())+' لازم ۲۰ میلیارد<br>آمریکا ۳/۵ میلیارد کانادا ۱/۸ میلیارد عربستان ۵۰۰ میلیون</div>';[['iran','🇮🇷 برگشت'],['america','🇺🇸 آمریکا'],['canada','🇨🇦 کانادا'],['saudi','🇸🇦 عربستان']].forEach(function(z){h+='<div class=item><div><b>'+z[1]+'</b></div><button onclick="goGy(\''+z[0]+'\')">رفتن</button></div>'});openM(h)}
+function goGy(d){d=d.toLowerCase();let dest='';if(d.indexOf('amer')>-1||d.indexOf('usa')>-1)dest='america';else if(d.indexOf('canada')>-1)dest='canada';else if(d.indexOf('saudi')>-1||d.indexOf('arab')>-1)dest='saudi';else if(d.indexOf('iran')>-1)dest='iran';else{log('/gy america');return}if(dest===S.loc)return;if(dest!=='iran'){if(!S.passport){log('❌ پاسپورت /sib');return}let need=dest==='saudi'?2:3;if((S.visa[dest]||0)<need){log('❌ ویزا /sib');return}if(totalT()<20000000000){log('❌ ۲۰ میلیارد لازم');return}let fl=dest==='america'?3500000000:dest==='canada'?1800000000:500000000;if(S.wallet<fl){log('❌ بلیت '+fmt(fl));return}S.wallet-=fl;S.loc=dest}else{S.loc='iran'}save();update();renderHood();try{openTravel()}catch(e){}}
+let phoneNum='';
+function openPhone(){openM('<div class=phone><div style="text-align:center">📱 '+S.playerName+'</div><div class=phScr id=phScr></div></div>');phShow('home')}
+function phShow(a){let e=document.getElementById('phScr');if(!e)return;if(a==='home'){e.innerHTML='<div class=appGrid><button class=appBtn onclick="phShow(\'tel\')">📞<br>تلفن</button><button class=appBtn onclick="phShow(\'gal\')">🖼️<br>گالری</button><button class=appBtn onclick="phShow(\'set\')">⚙️<br>تنظیمات</button><button class=appBtn onclick="phShow(\'film\')">🎬<br>فیلم</button></div><div class=small>۵ بار به 8 زنگ بزن '+(S.eight||0)+'/۵</div>'}if(a==='tel'){e.innerHTML='<b>📞</b><div id=phNum style="background:#000;text-align:center;font-size:22px;direction:ltr;padding:8px">'+(phoneNum||'―')+'</div><div class=pad>'+[1,2,3,4,5,6,7,8,9,0].map(function(n){return '<button onclick="dial(\''+n+'\')">'+n+'</button>'}).join('')+'</div><button onclick="callNum()" style="width:100%;background:#00e676">تماس</button><button class=sec onclick="phShow(\'home\')">برگشت</button>'}if(a==='gal'){e.innerHTML='<b>گالری</b><div class=small>'+S.cars.length+' ماشین '+S.homes.length+' خونه</div><button class=sec onclick="phShow(\'home\')">برگشت</button>'}if(a==='set'){e.innerHTML='<b>تنظیمات</b><input id=setSkinIn placeholder="اسکین"><button onclick="setSkin2()">ذخیره</button><button class=sec onclick="phShow(\'home\')">برگشت</button>'}if(a==='film'){e.innerHTML='<video controls style="width:100%"><source src="film.mp4"><source src="https://www.w3schools.com/html/mov_bbb.mp4"></video><button class=sec onclick="phShow(\'home\')">برگشت</button>'}}
+function dial(d){phoneNum+=d;phoneNum=phoneNum.slice(-15);document.getElementById('phNum').innerText=phoneNum}
+function callNum(){if(phoneNum==='8'){S.eight=(S.eight||0)+1;if(S.eight>=5){S.eight=0;save();phoneNum='';openM('<b>🎬</b><video controls autoplay style="width:100%"><source src="film.mp4"><source src="https://www.w3schools.com/html/mov_bbb.mp4"></video>');return}}phoneNum='';save();phShow('tel')}
+function setSkin2(){let v=document.getElementById('setSkinIn').value.trim();if(v){S.skin=v.slice(0,4);save();update()}phShow('home')}
+function openMission(){let ms=[{id:'m1',t:'⛏️ معدن: ۲۰ ضربه در ۲۵ ثانیه',done:(S.missions.m1done?true:false)},{id:'m2',t:'🏗️ ساختمان: ۷ آجر دقیق',done:(S.missions.m2done?true:false)},{id:'m3',t:'💰 ثروت ۵۰ میلیارد',done:totalT()>=50000000000},{id:'m4',t:'🛂 پاسپورت + هر ۳ ویزا',done:(S.passport&&(S.visa.america>=3)&&(S.visa.canada>=3)&&(S.visa.saudi>=2))},{id:'m5',t:'🚗 ۵ ماشین + ۲ خونه',done:(S.cars.length>=5&&S.homes.length>=2)}];let h='<h3>🎯 ماموریت‌های سخت</h3><div class=small>هر کدوم رو انجام بدی جام 🏆 میاد روش بزن جایزه بگیر.</div>';ms.forEach(function(m){let claimed=S.missions[m.id];h+='<div class=item><div><b>'+m.t+'</b><div class=small>'+(claimed?'✅ گرفته شد':m.done?'🟢 آماده دریافت!':'🔴 هنوز نه')+'</div></div>'+(!claimed&&m.done?'<button onclick="claimM(\''+m.id+'\')">دریافت جام</button>':'')+'</div>'});openM(h)}
+function claimM(id){if(S.missions[id])return;S.missions[id]=1;let rw=id==='m4'?2000000000:500000000;S.wallet+=rw;S.shopCoin=(S.shopCoin||0)+5;save();update();sendToAdmin("🎯 بازیکن: "+(S.playerName||"بدون اسم")+" | ماموریت "+id+" را گرفت | ثروت "+Math.floor(totalT()/1000000000)+" میلیارد");openM('<div class=trophy onclick="closeM()">🏆</div><div style="text-align:center"><b>تبریک! جام گرفتی 🎉</b><br>+'+fmt(rw)+' + ۵ سکه<br>روش بزن ببندش 👆</div>');checkAuto()}
+function checkAuto(){if(totalT()>=50000000000&&!S.missions.m3notified){S.missions.m3notified=1;save();log('🎯 ماموریت ۵۰ میلیارد انجام شد! برو تو ماموریت‌ها جام بگیر')}}
+let mS=0,mT=0,mInt=null,mSh=null,mB=[];
+function startMine(){openM('<b>⛏️ معدن ۲۵ ثانیه ۲۰ ضربه</b><div id=mgrid style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"></div>');mS=0;mT=25;let g=document.getElementById('mgrid');g.innerHTML='';mB=[1,5,10,14];for(let i=0;i<16;i++){let d=document.createElement('div');d.className='rock';d.id='c'+i;d.innerText='🪨';(function(x){d.onclick=function(){mHit(x)}})(i);g.appendChild(d)}paintB();clearInterval(mInt);clearInterval(mSh);mInt=setInterval(function(){mT--;if(mT<=0){endMine();return}},1000);mSh=setInterval(function(){mB=Array.from({length:4},function(){return Math.floor(Math.random()*16)});paintB()},2500)}
+function paintB(){for(let i=0;i<16;i++){let d=document.getElementById('c'+i);if(d&&!d.dataset.hit)d.style.border=mB.includes(i)?'2px solid red':'1px solid #333'}}
+function mHit(i){if(mT<=0)return;let d=document.getElementById('c'+i);if(mB.includes(i)){mS-=3;d.innerText='💣'}else{mS++;d.innerText='💎';d.dataset.hit=1;setTimeout(function(){let x=document.getElementById('c'+i);if(x){x.innerText='🪨';delete x.dataset.hit}},500)}}
+function endMine(){clearInterval(mInt);clearInterval(mSh);let mult=S.kit==='GOD'?2:S.kit==='SUPER'?1.5:1;let r=mS>=20?5000000*mult:Math.max(0,mS*200000*mult);if(mS>=20){S.missions.m1done=1;log('🎯 ماموریت معدن انجام شد!')}if(S.loc==='iran')S.wallet+=r;else if(S.loc==='america')S.dollar+=r/RU;else if(S.loc==='canada')S.cad+=r/RC;else S.dinar+=r/RD;save();update();closeM()}
+let bP=0,bD=3.5,bOk=0,bTry=0,bInt=null;
+function startBuild(){openM('<b>🏗️ ساختمان</b><div id=buildbar><div id=greenzone style="left:44%;width:12%"></div><div id=marker style="left:0%"></div></div><div class=small id=binfo>۰ از ۷</div><button onclick="hitB()">🧱 آجر</button>');bP=0;bD=3.5;bOk=0;bTry=0;clearInterval(bInt);bInt=setInterval(function(){bP+=bD+(Math.random()-0.5)*1.5;if(bP>93||bP<0)bD*=-1;let m=document.getElementById('marker');if(m)m.style.left=bP+'%'},30)}
+function hitB(){let gz=document.getElementById('greenzone');let gl=parseFloat(gz.style.left),gw=parseFloat(gz.style.width);bTry++;if(bP>=gl&&bP<=gl+gw){bOk++;gz.style.left=(Math.random()*85)+'%';gw=Math.max(7,gw-0.7);gz.style.width=gw+'%';bD*=1.12}document.getElementById('binfo').innerText=bOk+' از ۷ | '+bTry+'/۱۲';if(bOk>=7){clearInterval(bInt);S.missions.m2done=1;let m=S.kit==='GOD'?2:1;if(S.loc==='iran')S.wallet+=6000000*m;else S.dollar+=6000000*m/RU;log('🎯 ماموریت ساختمان انجام شد!');save();update();closeM()}else if(bTry>=12){clearInterval(bInt);if(S.loc==='iran')S.wallet+=bOk*400000;save();update();closeM()}}
+let dS=0,dP=0,dT=null,dL=0;
+function startDalal(){if(S.loc!=='iran'){log('❌ فقط ایران');return}dS=0;dP=0;dalalStep()}
+function dalalStep(){if(dS>=3){S.wallet+=dP*(1+S.edu*0.3);save();update();closeM();return}let off=1800000000-Math.floor(Math.random()*400000000)-100000000;dL=12;openM('<b>🤝 مشتری '+(dS+1)+'/۳</b><div>'+fmt(off)+'</div><div class=small id=dtime>۱۲</div><button onclick="dCho(1)">سریع</button><button class=sec onclick="dCho(2)">چانه</button><button class=sec onclick="dCho(3)">مقطوع</button>');clearInterval(dT);dT=setInterval(function(){dL--;let e=document.getElementById('dtime');if(e)e.innerText=dL;if(dL<=0){clearInterval(dT);dS++;dalalStep()}},1000)}
+function dCho(k){clearInterval(dT);let r=Math.random();if(k===1)dP+=800000;else if(k===2){if(r>0.45)dP+=5000000}else{if(r>0.55)dP+=12000000;else dP+=300000}dS++;dalalStep()}
+function sleep(){S.day++;earn();save();update();log('😴 خوابیدی روز '+S.day)}
+function earn(){let inc=0;S.cars.forEach(function(i){inc+=CARS[i][2]});inc*=1+S.edu*0.15;if(S.kit==='GOD')inc*=2;S.wallet+=inc;if(S.day>=S.lastInt+4&&S.bank>0){let s2=Math.floor(S.bank*getB());S.bank+=s2;S.lastInt=S.day}}
+function sendChat(){let i=document.getElementById('ci'),v=i.value.trim();if(!v)return;log('🧍 '+v);i.value='';handle(v);save();update()}
+document.getElementById('ci').addEventListener('keydown',function(e){if(e.key==='Enter')sendChat()});
+function handle(v){let clean=en(v).trim().replace(/[^0-9]/g,'');if(/^[0-9]{6}$/.test(clean)){let r=check6(v);if(r){if(S.used.includes(r.code))log('❌ تکراری');else{S.shopCoin+=r.amt;S.used.push(r.code);log('🎉 '+r.amt+' سکه')}return}}if(/^[0-9]{8}$/.test(clean)){let r=check8(v);if(r){if(S.used.includes(r.code))log('❌ تکراری');else{let nk=r.type===1?'VIP':r.type===2?'SUPER':'GOD';S.kit=nk;S.skin=KITS[nk].skin;S.shopCoin+=KITS[nk].coin;S.used.push(r.code);log('💎 '+nk)}return}log('❌ نامعتبر');return}let l=v.toLowerCase();if(l==='/shop')openShop();else if(l==='/shopp')openShopp();else if(l==='/sib')openSib();else if(l.indexOf('/gy')===0){goGy(v.split(' ')[1]||'')}else if(l==='/travel')openTravel();else if(l==='/phone')openPhone();else if(l==='/mission')openMission();else if(l==='/bal')log('💰 '+fmt(S.wallet)+' ثروت '+fmt(totalT()));else if(l==='/sleep')sleep();else if(l==='/help')log('/shop /shopp /sib /gy /phone /mission /Bal');else log('بنویس /help')}
+update();renderHood();
+</script>
+</body>
+</html>
